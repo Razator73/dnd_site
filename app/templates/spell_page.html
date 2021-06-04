@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block dnd_content %}
+    <header class="post-header">
+        <h1 class="post-title">{{ spell.name }}</h1>
+        <dl class="tag-list">
+            <dt>Tags:</dt>
+            {% for tag in spell.tags %}
+                <dd><a href="{{ url_for('spells_by_tag', tag_name=tag) }}">{{ tag.capitalize() }}</a></dd>
+            {% endfor %}
+        </dl>
+    </header>
+    <article class="post-content">
+        <p><strong>
+            {% if spell.level_string == 'cantrip' %}
+                {{ spell.school.capitalize() }} {{ spell.level_string }}
+            {% else %}
+                {{ spell.level_string }}-level {{ spell.school }}
+            {% endif %}
+            {% if spell.ritual %} (ritual) {% endif %}
+        </strong></p>
+        <p><strong>Casting Time:</strong> {{ spell.casting_time }}</p>
+        <p><strong>Range:</strong> {{ spell.range }}</p>
+        <p><strong>Components:</strong> {{ spell.components }}</p>
+        <p><strong>Duration:</strong> {{ spell.duration }}</p>
+        {{ markdown(spell.description, extensions=['tables'])|safe }}
+        {% if spell.at_higher_levels %}
+            <p><strong><em>At Higher Levels.</em></strong> {{ spell.at_higher_levels }}</p>
+        {% endif %}
+        <hr>
+        <p>For reference check {{ spell.source }}</p>
+    </article>
+{% endblock %}

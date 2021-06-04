@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+
+{% block dnd_content %}
+    <h1>This is my D&D site</h1><br>
+    <a href="{{ url_for('spell_home') }}">Spells</a><br>
+    <a href="{{ url_for('creatures_home') }}">Creatures</a>
+{% endblock %}

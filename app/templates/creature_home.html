@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block dnd_content %}
+    <h1 class="page-heading">{{ title }}</h1><br>
+
+    <p id="creatureSearch">
+        Search by name: <input type="search" name="creatures" id="jetsSearch">
+    </p>
+    <p id="sortBy">Sort By:
+        <a href="{{ url_for('creatures_home') }}">CR</a>
+        <a href="{{ url_for('creatures_by_name') }}">Name</a>
+    </p>
+
+    <dl class="tag-list">
+        <dt>
+            {% if byname %}
+                Letter:
+            {% else %}
+                Challenge Rating:
+            {% endif %}
+        </dt>
+        {% for cr in grouped_creatures.keys() %}
+            <dd><a href="#{{ cr.lower().replace(' ', '') }}">{{ cr }}</a></dd>
+        {% endfor %}
+    </dl>
+
+    <dl class="schools-list">
+        <dt>Monster Type:</dt>
+        <dd><a class="spell-school selected" name="all">All</a></dd><dd>|</dd>
+        {% for kind in kinds %}
+            <dd><a class="spell-school" name="{{ kind }}">{{ kind.capitalize() }}</a></dd>
+        {% endfor %}
+    </dl>
+
+    {% for cr, creatures in grouped_creatures.items() %}
+        <a id="{{ cr.lower().replace(' ', '') }}"></a>
+        <h2 class="post-list-head jetsHide">{% if not byname %}Challenge {% endif %}{{ cr }}</h2>
+        <ul class="post-list jetsContent">
+        {% for creature in creatures %}
+            <li data-jets="{{ creature.name.lower() }}">
+                <a class="post-link" tags="{{ ' '.join(creature.tags) }}" href="{{ url_for('creature_page', creature_name=creature.url_path) }}">
+                    {{ creature.name }}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+        <a class="post-meta jetsHide" href="#top">Back to top &#8593;</a>
+    {% endfor %}
+{% endblock %}

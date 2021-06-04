@@ -1,0 +1,5 @@
+[default]
+db_uri = 'postgresql:///dnd_site'
+db_track_modifications = false
+[testing]
+db_uri = 'postgresql:///dnd_site_test'
