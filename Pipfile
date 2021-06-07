@@ -12,11 +12,17 @@ flask-migrate = "*"
 psycopg2-binary = "*"
 flask-wtf = "*"
 markdown = "*"
+sqlalchemy = "*"
+werkzeug = "*"
+flask-login = "*"
+email-validator = "*"
 
 [dev-packages]
 ipython = "*"
 pytest = "*"
 pytest-watch = "*"
+beautifulsoup4 = "*"
+requests = "*"
 
 [requires]
 python_version = "3.9"

@@ -1,5 +1,9 @@
 [default]
-db_uri = 'postgresql:///dnd_site'
-db_track_modifications = false
+sqlalchemy_database_uri = 'postgresql:///dnd_site'
+sqlalchemy_track_modifications = false
+non_srd_roles = 49
+admin_role = 99
+[production]
+[development]
 [testing]
-db_uri = 'postgresql:///dnd_site_test'
+sqlalchemy_database_uri = 'postgresql:///dnd_site_test'

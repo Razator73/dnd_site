@@ -1,6 +1,15 @@
-from sqlalchemy.dialects.postgresql import ARRAY
+import datetime as dt
 
-from app import db
+from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import ARRAY
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from app import db, login
+
+
+@login.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 class ModelCrud:
@@ -11,6 +20,42 @@ class ModelCrud:
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+
+class Role(db.Model, ModelCrud):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    name = db.Column(db.String(31), nullable=False)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    def __repr__(self):
+        return f'<Role ({self.name})>'
+
+
+class User(UserMixin, db.Model, ModelCrud):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(63), index=True, unique=True, nullable=False)
+    email = db.Column(db.String(127), index=True, unique=True, nullable=False)
+    password_hash = db.Column(db.String(127), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), default=10)
+    last_seen = db.Column(db.DateTime, default=dt.datetime.utcnow)
+
+    def __init__(self, username, email, password):
+        self.username = username
+        self.email = email
+        self.set_password(password)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f'<User ({self.username})>'
 
 
 class Spell(db.Model, ModelCrud):
@@ -31,6 +76,7 @@ class Spell(db.Model, ModelCrud):
     description = db.Column(db.Text, nullable=False)
     at_higher_levels = db.Column(db.Text)
     url_path = db.Column(db.String(63), nullable=False, unique=True)
+    srd = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f'<Spell ({self.name})>'
@@ -77,6 +123,7 @@ class Creature(db.Model, ModelCrud):
     source = db.Column(db.String(63))
     description = db.Column(db.Text, nullable=False)
     url_path = db.Column(db.String(63), index=True, nullable=False, unique=True)
+    srd = db.Column(db.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f'<Creature ({self.name})>'
