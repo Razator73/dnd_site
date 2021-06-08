@@ -1,13 +1,17 @@
 import datetime as dt
+from pathlib import Path
+
 import markdown
+from PIL import Image
 
 from flask import render_template, redirect, url_for, flash, request, abort
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
 
 from app import app
-from app.forms import LoginForm, RegistrationForm
-from app.models import Spell, Creature, User
+from app.forms import LoginForm, RegistrationForm, EditUserForm
+from app.models import Spell, Creature, User, Role
 
 
 def group_spells(spells):
@@ -85,15 +89,81 @@ def register():
 
 
 @app.route('/user/<username>')
+@login_required
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('profile.html', title=user.username, user=user)
+    return render_template('profile.html', title=user.username, user=user, admin_id=app.config.get('ADMIN_ROLE'))
+
+
+def save_picture(pic, user):
+    image_file = secure_filename(pic.filename)
+    filename = f'{user.username}_{image_file}'
+    picture_folder = Path(app.config.get('UPLOADED_IMAGES_DEST'))
+    if (current_pic := user.profile_picture_path.split('/')[-1]) != 'default.png':
+        (picture_folder / current_pic).unlink()
+
+    output_size = (256, 256)
+    white_color = (255, 255, 255)
+    img = Image.open(pic)
+    w, h = img.size
+    if w > h:
+        sq_img = Image.new(img.mode, (w, w), white_color)
+        sq_img.paste(img, (0, (w - h) // 2))
+        img = sq_img
+    elif h > w:
+        sq_img = Image.new(img.mode, (h, h), white_color)
+        sq_img.paste(img, ((h - w) // 2, 0))
+        img = sq_img
+    img.thumbnail(output_size)
+    img.save(picture_folder / filename)
+    return filename
+
+
+@app.route('/edit_user/<username>', methods=['GET', 'POST'])
+def edit_user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
+    if current_user == user or is_admin:
+        user_form = EditUserForm(user)
+        if user_form.validate_on_submit():
+            user.username = user_form.username.data
+            user.email = user_form.email.data
+            if user.role.name != user_form.role.data and is_admin:
+                role = Role.query.filter_by(name=user_form.role.data).first()
+                user.role_id = role.id
+            if profile_picture := user_form.profile_picture.data:
+                filename = save_picture(profile_picture, user)
+                user.profile_picture_path = f'profiles/{filename}'
+            user.save()
+            flash('Your changes have been saved')
+            return redirect(url_for('profile', username=user.username))
+        elif request.method == 'GET':
+            user_form.username.data = user.username
+            user_form.email.data = user.email
+            user_form.role.data = user.role.name
+        return render_template('edit_user.html', title=f'Edit {user.username}', form=user_form, user=user,
+                               admin_id=app.config.get('ADMIN_ROLE'))
+    else:
+        abort(404)
+
+
+@app.route('/delete_user/<username>')
+def delete_user(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    if current_user == user:
+        user.delete()
+        flash('You have successfully deleted your account')
+    elif current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE'):
+        user.delete()
+        flash(f'User {user.username} has been successfully deleted.')
+        return redirect(url_for('user_list'))
+    return redirect(url_for('home'))
 
 
 @app.route('/users')
 def user_list():
     if current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE'):
-        users = User.query.all()
+        users = User.query.order_by(User.role_id.desc(), User.username).all()
         return render_template('users.html', title='Users', users=users)
     else:
         abort(404)

@@ -40,6 +40,7 @@ class User(UserMixin, db.Model, ModelCrud):
     username = db.Column(db.String(63), index=True, unique=True, nullable=False)
     email = db.Column(db.String(127), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(127), nullable=False)
+    profile_picture_path = db.Column(db.String(127), default='profiles/default.png', nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), default=10)
     last_seen = db.Column(db.DateTime, default=dt.datetime.utcnow)
 

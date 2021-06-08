@@ -16,6 +16,8 @@ sqlalchemy = "*"
 werkzeug = "*"
 flask-login = "*"
 email-validator = "*"
+flask-reuploaded = "*"
+pillow = "*"
 
 [dev-packages]
 ipython = "*"

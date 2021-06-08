@@ -3,3 +3,5 @@
 .secrets.*
 /scratch/
 /.env
+app/static/profiles/*
+!app/static/profiles/default.png
