@@ -1,6 +1,7 @@
 import datetime as dt
 
 from flask_login import UserMixin
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -37,8 +38,8 @@ class User(UserMixin, db.Model, ModelCrud):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(63), index=True, unique=True, nullable=False)
-    email = db.Column(db.String(127), index=True, unique=True, nullable=False)
+    username = db.Column(db.String(63), nullable=False)
+    email = db.Column(db.String(127), nullable=False)
     password_hash = db.Column(db.String(127), nullable=False)
     profile_picture_path = db.Column(db.String(127), default='profiles/default.png', nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), default=10)
@@ -57,6 +58,10 @@ class User(UserMixin, db.Model, ModelCrud):
 
     def __repr__(self):
         return f'<User ({self.username})>'
+
+
+db.Index('ix_users_username', func.lower(User.username), unique=True)
+db.Index('ix_users_email', func.lower(User.email), unique=True)
 
 
 class Spell(db.Model, ModelCrud):

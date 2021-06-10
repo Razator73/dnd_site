@@ -23,11 +23,11 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register')
 
     def validate_username(self, username):
-        if User.query.filter_by(username=username.data).first():
+        if User.query.filter(User.username.ilike(username.data)).first():
             raise ValidationError('Username already taken. Please try something else.')
 
     def validate_email(self, email):
-        if User.query.filter_by(email=email.data).first():
+        if User.query.filter(User.email.ilike(email.data)).first():
             raise ValidationError('Email already taken. Please try something else.')
 
 
@@ -45,9 +45,10 @@ class EditUserForm(FlaskForm):
         self.user = user
 
     def validate_username(self, username):
-        if username.data != self.user.username and User.query.filter_by(username=username.data).first():
+        user = User.query.filter(User.username.ilike(username.data)).first()
+        if username.data.lower() != self.user.username.lower() and user:
             raise ValidationError('Username is already taken. Please use a different username')
 
     def validate_email(self, email):
-        if email.data != self.user.email and User.query.filter_by(email=email.data).first():
+        if email.data.lower() != self.user.email.lower() and User.query.filter(User.email.ilike(email.data)).first():
             raise ValidationError('Email is already taken. Please use a different email')

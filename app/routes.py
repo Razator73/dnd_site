@@ -54,7 +54,7 @@ def login():
         return redirect(url_for('home'))
     login_form = LoginForm()
     if login_form.validate_on_submit():
-        user = User.query.filter_by(username=login_form.username.data).first()
+        user = User.query.filter(User.username.ilike(login_form.username.data.lower())).first()
         if user is None or not user.check_password(login_form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -91,7 +91,7 @@ def register():
 @app.route('/user/<username>')
 @login_required
 def profile(username):
-    user = User.query.filter_by(username=username).first_or_404()
+    user = User.query.filter(User.username.ilike(username)).first_or_404()
     return render_template('profile.html', title=user.username, user=user, admin_id=app.config.get('ADMIN_ROLE'))
 
 
@@ -121,7 +121,7 @@ def save_picture(pic, user):
 
 @app.route('/edit_user/<username>', methods=['GET', 'POST'])
 def edit_user(username):
-    user = User.query.filter_by(username=username).first_or_404()
+    user = User.query.filter(User.username.ilike(username)).first_or_404()
     is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
     if current_user == user or is_admin:
         user_form = EditUserForm(user)
@@ -149,7 +149,7 @@ def edit_user(username):
 
 @app.route('/delete_user/<username>')
 def delete_user(username):
-    user = User.query.filter_by(username=username).first_or_404()
+    user = User.query.filter(User.username.ilike(username)).first_or_404()
     if current_user == user:
         user.delete()
         flash('You have successfully deleted your account')
