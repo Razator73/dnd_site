@@ -65,6 +65,7 @@ db.Index('ix_users_email', func.lower(User.email), unique=True)
 
 
 class Spell(db.Model, ModelCrud):
+    # TODO: Create spell_tags and spell_tag_links tables
     __tablename__ = 'spells'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -89,6 +90,7 @@ class Spell(db.Model, ModelCrud):
 
 
 class Creature(db.Model, ModelCrud):
+    # TODO: Create creature_tags and creature_tag_links tables
     __tablename__ = 'creatures'
 
     id = db.Column(db.Integer, primary_key=True)

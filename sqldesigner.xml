@@ -37,10 +37,11 @@
 		<type label="SET" length="1" sql="SET" quote=""/>
 		<type label="Bit" length="0" sql="bit" quote=""/>
 	</group>
-</datatypes><table x="75" y="25" name="spells">
+</datatypes><table x="209" y="18" name="spells">
 <row name="id" null="0" autoincrement="1">
 <datatype>INTEGER</datatype>
-<default>NULL</default></row>
+<default>NULL</default><relation table="spell_tag_links" row="spell_id" />
+</row>
 <row name="name" null="0" autoincrement="0">
 <datatype>VARCHAR(63)</datatype>
 </row>
@@ -93,7 +94,8 @@
 <table x="1500" y="0" name="creatures">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
-<default>NULL</default></row>
+<default>NULL</default><relation table="creature_tag_links" row="creature_id" />
+</row>
 <row name="name" null="0" autoincrement="0">
 <datatype>VARCHAR</datatype>
 </row>
@@ -212,7 +214,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="325" y="250" name="characters">
+<table x="357" y="246" name="characters">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -223,7 +225,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="325" y="150" name="spellbooks">
+<table x="357" y="146" name="spellbooks">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -235,7 +237,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="325" y="50" name="spellbook_spells">
+<table x="357" y="46" name="spellbook_spells">
 <row name="spell_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 <relation table="spells" row="id" />
@@ -257,6 +259,8 @@
 <relation table="characters" row="id" />
 </row>
 <key type="PRIMARY" name="">
+<part>user_id</part>
+<part>character_id</part>
 </key>
 </table>
 <table x="725" y="75" name="users">
@@ -425,5 +429,56 @@
 <part>id</part>
 </key>
 </table>
+<table x="39" y="61" name="spell_tags">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="spell_tag_links" row="tag_id" />
+</row>
+<row name="tag" null="0" autoincrement="0">
+<datatype>VARCHAR(32)</datatype>
+<default>'NULL'</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+<comment>All the possible spell tags</comment>
+</table>
+<table x="32" y="172" name="spell_tag_links">
+<row name="spell_id" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="tag_id" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>spell_id</part>
+<part>tag_id</part>
+</key>
+<comment>Link spells to tags</comment>
+</table>
+<table x="1743" y="73" name="creature_tags">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="creature_tag_links" row="tag_id" />
+</row>
+<row name="tag" null="0" autoincrement="0">
+<datatype>VARCHAR(32)</datatype>
+<default>'NULL'</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+<comment>All the creature tags</comment>
+</table>
+<table x="1721" y="171" name="creature_tag_links">
+<row name="creature_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="tag_id" null="0" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>creature_id</part>
+<part>tag_id</part>
+</key>
+<comment>Link creatures to tags</comment>
+</table>
 </sql>
-
