@@ -204,7 +204,10 @@ def spells_by_tag(tag_name):
 
 @app.route('/creatures')
 def creatures_home():
-    creatures = Creature.query.order_by(Creature.cr, Creature.name).all()
+    if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
+        creatures = Creature.query.order_by(Creature.cr, Creature.name).all()
+    else:
+        creatures = Creature.query.filter_by(srd=True).order_by(Creature.cr, Creature.name).all()
     grouped_creatures = group_creatures(creatures)
     kinds = set([c.kind for c in creatures])
     return render_template('creature_home.html', title='Bestiary', grouped_creatures=grouped_creatures,
@@ -213,7 +216,10 @@ def creatures_home():
 
 @app.route('/creatures/byname')
 def creatures_by_name():
-    creatures = Creature.query.order_by(Creature.name).all()
+    if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
+        creatures = Creature.query.order_by(Creature.name).all()
+    else:
+        creatures = Creature.query.filter_by(srd=True).order_by(Creature.name).all()
     grouped_creatures = group_creatures(creatures, byname=True)
     kinds = set([c.kind for c in creatures])
     return render_template('creature_home.html', title='Bestiary', grouped_creatures=grouped_creatures,
@@ -222,13 +228,21 @@ def creatures_by_name():
 
 @app.route('/creatures/<creature_name>')
 def creature_page(creature_name):
-    creature = Creature.query.filter_by(url_path=creature_name).first_or_404()
+    if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
+        creature = Creature.query.filter_by(url_path=creature_name).first_or_404()
+    else:
+        creature = Creature.query.filter_by(url_path=creature_name, srd=True).first_or_404()
     return render_template('creature_page.html', title=creature.name, creature=creature, markdown=markdown.markdown)
 
 
 @app.route('/creatures/tags/<tag_name>')
 def creatures_by_tag(tag_name):
-    tag_creatures = Creature.query.filter(Creature.tags.contains([tag_name])).order_by(Creature.cr, Creature.name).all()
+    if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
+        tag_filter = Creature.query.filter(Creature.tags.contains([tag_name]))
+        tag_creatures = tag_filter.order_by(Creature.cr, Creature.name).all()
+    else:
+        tag_filter = Creature.query.filter(Creature.tags.contains([tag_name]) & Creature.srd)
+        tag_creatures = tag_filter.order_by(Creature.cr, Creature.name).all()
     grouped_creatures = group_creatures(tag_creatures)
     tag_name = tag_name.upper() if tag_name.startswith('cr') else tag_name.replace('-', ' ').title()
     kinds = set([c.kind for c in tag_creatures])
