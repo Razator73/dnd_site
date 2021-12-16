@@ -38,7 +38,7 @@
         <ul class="post-list jetsContent">
         {% for creature in creatures %}
             <li data-jets="{{ creature.name.lower() }}">
-                <a class="post-link" tags="{{ ' '.join(creature.tags) }}" href="{{ url_for('creature_page', creature_name=creature.url_path) }}">
+                <a class="post-link" tags="{{ creature.tag_str }}" href="{{ url_for('creature_page', creature_name=creature.url_path) }}">
                     {{ creature.name }}
                 </a>
             </li>

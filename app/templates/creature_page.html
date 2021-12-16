@@ -5,12 +5,12 @@
         <h1 class="post-title">{{ creature.name }}</h1>
         <dl class="tag-list">
             <dt>Tags:</dt>
-            {% for tag in creature.tags %}
-                <dd><a href="{{ url_for('creatures_by_tag', tag_name=tag) }}">
-                    {% if tag.startswith('cr') %}
-                        {{ tag.upper() }}
+            {% for tag in creature.tags.all() %}
+                <dd><a href="{{ url_for('creatures_by_tag', tag_name=tag.tag) }}">
+                    {% if tag.tag.startswith('cr') %}
+                        {{ tag.tag.upper() }}
                     {% else %}
-                        {{ tag.replace('-', ' ').title() }}
+                        {{ tag.tag.replace('-', ' ').title() }}
                     {% endif %}
                 </a></dd>
             {% endfor %}

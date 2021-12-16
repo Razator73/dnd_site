@@ -64,14 +64,19 @@ db.Index('ix_users_username', func.lower(User.username), unique=True)
 db.Index('ix_users_email', func.lower(User.email), unique=True)
 
 
+spell_tag_links = db.Table(
+    'spell_tag_links',
+    db.Column('spell_id', db.Integer, db.ForeignKey('spells.id'), primary_key=True),
+    db.Column('spell_tag_id', db.Integer, db.ForeignKey('spell_tags.id'), primary_key=True)
+)
+
+
 class Spell(db.Model, ModelCrud):
-    # TODO: Create spell_tags and spell_tag_links tables
     __tablename__ = 'spells'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63), index=True, unique=True, nullable=False)
     source = db.Column(db.String(15))
-    tags = db.Column(ARRAY(db.String(31)), nullable=False)
     level = db.Column(db.Integer, nullable=False)
     level_string = db.Column(db.String(7), nullable=False)
     school = db.Column(db.String(15), nullable=False)
@@ -84,18 +89,43 @@ class Spell(db.Model, ModelCrud):
     at_higher_levels = db.Column(db.Text)
     url_path = db.Column(db.String(63), nullable=False, unique=True)
     srd = db.Column(db.Boolean, nullable=False, default=False)
+    tags = db.relationship('SpellTag', secondary=spell_tag_links, lazy='dynamic',
+                           backref=db.backref('tags', lazy='dynamic'))
+    tag_str = db.Column(db.String(255), default='')
+
+    def add_tag(self, tag, commit=True):
+        self.tags.append(tag)
+        tag_str = self.tag_str if self.tag_str else ''
+        self.tag_str = tag_str + (f' {tag.tag}' if self.tag_str else tag.tag)
+        if commit:
+            db.session.commit()
 
     def __repr__(self):
         return f'<Spell ({self.name})>'
 
 
+class SpellTag(db.Model, ModelCrud):
+    __tablename__ = 'spell_tags'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(31), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f'<SpellTag ({self.tag})>'
+
+
+creature_tag_links = db.Table(
+    'creature_tag_links',
+    db.Column('creature_id', db.Integer, db.ForeignKey('creatures.id'), primary_key=True),
+    db.Column('creature_tag_id', db.Integer, db.ForeignKey('creature_tags.id'), primary_key=True)
+)
+
+
 class Creature(db.Model, ModelCrud):
-    # TODO: Create creature_tags and creature_tag_links tables
     __tablename__ = 'creatures'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(63), index=True, unique=True, nullable=False)
-    tags = db.Column(ARRAY(db.String(63)), nullable=False)
     size = db.Column(db.String(15), nullable=False)
     kind = db.Column(db.String(15), nullable=False)
     sub_kind = db.Column(db.String(31))
@@ -132,6 +162,26 @@ class Creature(db.Model, ModelCrud):
     description = db.Column(db.Text, nullable=False)
     url_path = db.Column(db.String(63), index=True, nullable=False, unique=True)
     srd = db.Column(db.Boolean, nullable=False, default=False)
+    tags = db.relationship('CreatureTag', secondary=creature_tag_links, lazy='dynamic',
+                           backref=db.backref('tags', lazy='dynamic'))
+    tag_str = db.Column(db.String(255), default='')
+
+    def add_tag(self, tag, commit=True):
+        self.tags.append(tag)
+        tag_str = self.tag_str if self.tag_str else ''
+        self.tag_str = tag_str + (f' {tag.tag}' if self.tag_str else tag.tag)
+        if commit:
+            db.session.commit()
 
     def __repr__(self):
         return f'<Creature ({self.name})>'
+
+
+class CreatureTag(db.Model, ModelCrud):
+    __tablename__ = 'creature_tags'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(31), nullable=False, unique=True)
+
+    def __repr__(self):
+        return f'<CreatureTag ({self.tag})>'

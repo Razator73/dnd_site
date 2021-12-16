@@ -42,7 +42,7 @@
         <ul class="post-list jetsContent">
         {% for spell in spells %}
             <li data-jets="{{ spell.name.lower() }}">
-                <a class="post-link" tags="{{ ' '.join(spell.tags) }}" href="{{ url_for('spell_page', spell_name=spell.url_path) }}">
+                <a class="post-link" tags="{{ spell.tag_str }}" href="{{ url_for('spell_page', spell_name=spell.url_path) }}">
                     {{ spell.name }}
                 </a>
             </li>

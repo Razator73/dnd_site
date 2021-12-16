@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from app import app
 from app.forms import LoginForm, RegistrationForm, EditUserForm
-from app.models import Spell, Creature, User, Role
+from app.models import Spell, Creature, User, Role, CreatureTag, SpellTag
 
 
 def group_spells(spells):
@@ -191,11 +191,11 @@ def spell_page(spell_name):
 
 @app.route('/spells/tags/<tag_name>')
 def spells_by_tag(tag_name):
+    tag = SpellTag.query.filter_by(tag=tag_name).first()
     if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
-        tag_spells = Spell.query.filter(Spell.tags.contains([tag_name])).order_by(Spell.level, Spell.name).all()
+        tag_spells = Spell.query.with_parent(tag).order_by(Spell.level, Spell.name).all()
     else:
-        spells_filter = Spell.query.filter(Spell.tags.contains([tag_name]) & Spell.srd)
-        tag_spells = spells_filter.order_by(Spell.level, Spell.name).all()
+        tag_spells = Spell.filter(Spell.srd).with_parent(tag).order_by(Spell.level, Spell.name).all()
     grouped_tags = group_spells(tag_spells)
     schools = set([s.school for s in tag_spells])
     return render_template('spell_home.html', title=f'{tag_name.capitalize()} Spells',
@@ -237,12 +237,11 @@ def creature_page(creature_name):
 
 @app.route('/creatures/tags/<tag_name>')
 def creatures_by_tag(tag_name):
+    tag = CreatureTag.query.filter_by(tag=tag_name).first()
     if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
-        tag_filter = Creature.query.filter(Creature.tags.contains([tag_name]))
-        tag_creatures = tag_filter.order_by(Creature.cr, Creature.name).all()
+        tag_creatures = Creature.query.with_parent(tag).order_by(Creature.cr, Creature.name).all()
     else:
-        tag_filter = Creature.query.filter(Creature.tags.contains([tag_name]) & Creature.srd)
-        tag_creatures = tag_filter.order_by(Creature.cr, Creature.name).all()
+        tag_creatures = Creature.query.filter(Creature.srd).with_parent(tag).order_by(Creature.cr, Creature.name).all()
     grouped_creatures = group_creatures(tag_creatures)
     tag_name = tag_name.upper() if tag_name.startswith('cr') else tag_name.replace('-', ' ').title()
     kinds = set([c.kind for c in tag_creatures])

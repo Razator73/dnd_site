@@ -5,8 +5,8 @@
         <h1 class="post-title">{{ spell.name }}</h1>
         <dl class="tag-list">
             <dt>Tags:</dt>
-            {% for tag in spell.tags %}
-                <dd><a href="{{ url_for('spells_by_tag', tag_name=tag) }}">{{ tag.capitalize() }}</a></dd>
+            {% for tag in spell.tags.all() %}
+                <dd><a href="{{ url_for('spells_by_tag', tag_name=tag.tag) }}">{{ tag.tag.capitalize() }}</a></dd>
             {% endfor %}
         </dl>
     </header>
