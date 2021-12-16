@@ -9,6 +9,8 @@
 
     <dl class="tag-list">
         <dt>Class Lists:</dt>
+        <dd><a href="{{ url_for('spell_home') }}">All</a></dd>
+        <dd><a href="{{ url_for('spells_by_tag', tag_name='artificer') }}">Artificer</a></dd>
         <dd><a href="{{ url_for('spells_by_tag', tag_name='bard') }}">Bard</a></dd>
         <dd><a href="{{ url_for('spells_by_tag', tag_name='cleric') }}">Cleric</a></dd>
         <dd><a href="{{ url_for('spells_by_tag', tag_name='druid') }}">Druid</a></dd>

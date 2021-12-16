@@ -76,7 +76,7 @@ class Spell(db.Model, ModelCrud):
     level_string = db.Column(db.String(7), nullable=False)
     school = db.Column(db.String(15), nullable=False)
     ritual = db.Column(db.Boolean, nullable=False, default=False)
-    casting_time = db.Column(db.String(127), nullable=False)
+    casting_time = db.Column(db.String(255), nullable=False)
     range = db.Column(db.String(63), nullable=False)
     components = db.Column(db.String(), nullable=False)
     duration = db.Column(db.String(), nullable=False)
