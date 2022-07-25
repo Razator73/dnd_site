@@ -32,6 +32,16 @@ def group_creatures(creatures, byname=False):
     return grouped_creatures
 
 
+def get_spell_list():
+    if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
+        spells = Spell.query.order_by(Spell.level, Spell.name).all()
+    else:
+        spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
+    spells_by_level = group_spells(spells)
+    schools = set([s.school for s in spells])
+    return spells, spells_by_level, schools
+
+
 @app.before_request
 def before_request():
     if current_user.is_authenticated:
@@ -172,12 +182,7 @@ def user_list():
 
 @app.route('/spells')
 def spell_home():
-    if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
-        spells = Spell.query.order_by(Spell.level, Spell.name).all()
-    else:
-        spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
-    spells_by_level = group_spells(spells)
-    schools = set([s.school for s in spells])
+    spells, spells_by_level, schools = get_spell_list()
     return render_template('spell_home.html', title='Spells', spell_lists=spells_by_level, schools=schools,
                            class_lists=True, character=None, spellbook=None)
 
@@ -346,12 +351,7 @@ def character_edit_spells(char_id):
     character = Character.query.filter_by(id=char_id).first_or_404()
     is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
     if character.user == current_user or is_admin:
-        if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
-            all_spells = Spell.query.order_by(Spell.level, Spell.name).all()
-        else:
-            all_spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
-        spells_by_level = group_spells(all_spells)
-        schools = set([s.school for s in all_spells])
+        all_spells, spells_by_level, schools = get_spell_list()
         return render_template(
             'spell_home.html', title=f'Add/Remove spells for {character.name}', spell_lists=spells_by_level,
             schools=schools, class_lists=False, character=character, spellbook=character.spellbook
@@ -379,4 +379,3 @@ def character_edit_spell(char_id, spell_id, action):
     else:
         flash("You don't have permission to edit this character's spellbook")
     return redirect(url_for('character_spellbook', char_id=char_id))
-
