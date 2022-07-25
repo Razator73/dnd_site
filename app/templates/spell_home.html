@@ -22,7 +22,12 @@
             <dd><a href="{{ url_for('spells_by_tag', tag_name='wizard') }}">Wizard</a></dd>
         </dl>
     {% elif character %}
-        <p><a href="{{ url_for('character_page', char_id=character.id) }}">Back to character</a></p>
+        {% if spellbook %}
+            <p><a href="{{ url_for('character_spellbook', char_id=character.id) }}">Back to spellbook</a></p>
+        {% else %}
+            <p><a href="{{ url_for('character_page', char_id=character.id) }}">Back to character</a></p>
+            <p><a href="{{ url_for('character_edit_spells', char_id=character.id) }}">Add/Remove Spells</a></p>
+        {% endif %}
     {% endif %}
     <dl class="tag-list">
         <dt>Spell tier:</dt>
@@ -42,15 +47,29 @@
     {% for spell_list, spells in spell_lists.items() %}
         <a id="{{ spell_list.lower().replace(' ', '') }}"></a>
         <h2 class="post-list-head jetsHide">{{ spell_list }}</h2>
-        <ul class="post-list jetsContent">
-        {% for spell in spells %}
-            <li data-jets="{{ spell.name.lower() }}">
-                <a class="post-link" tags="{{ spell.tag_str }}" href="{{ url_for('spell_page', spell_name=spell.url_path) }}">
-                    {{ spell.name }}
-                </a>
-            </li>
-        {% endfor %}
-        </ul>
+        <table class="spells">
+            <tbody class="jetsContent">
+            {% for spell in spells %}
+                <tr data-jets="{{ spell.name.lower() }}" tags="{{ spell.tag_str }}" class="spell-row">
+                    <td><a class="post-link"
+                           href="{{ url_for('spell_page', spell_name=spell.url_path) }}">
+                        {{ spell.name }}
+                    </a></td>
+                    {% if character and spellbook %}
+                        {% if spell in spellbook.spells.all() %}
+                            <td align="right"><a class="post-link"
+                                   href="{{ url_for('character_edit_spell', char_id=character.id,
+                                                    spell_id=spell.id, action='remove') }}">Remove</a></td>
+                        {% else %}
+                            <td align="right"><a class="post-link"
+                                   href="{{ url_for('character_edit_spell', char_id=character.id,
+                                                    spell_id=spell.id, action='add') }}">Add</a></td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
         <a class="post-meta jetsHide" href="#top">Back to top &#8593;</a>
     {% endfor %}
 {% endblock %}

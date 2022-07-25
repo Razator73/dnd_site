@@ -35,15 +35,18 @@
     {% for cr, creatures in grouped_creatures.items() %}
         <a id="{{ cr.lower().replace(' ', '') }}"></a>
         <h2 class="post-list-head jetsHide">{% if not byname %}Challenge {% endif %}{{ cr }}</h2>
-        <ul class="post-list jetsContent">
-        {% for creature in creatures %}
-            <li data-jets="{{ creature.name.lower() }}">
-                <a class="post-link" tags="{{ creature.tag_str }}" href="{{ url_for('creature_page', creature_name=creature.url_path) }}">
-                    {{ creature.name }}
-                </a>
-            </li>
-        {% endfor %}
-        </ul>
+        <table class="spells">
+            <tbody class="jetsContent">
+            {% for creature in creatures %}
+                <tr data-jets="{{ creature.name.lower() }}" tags="{{ creature.tag_str }}" class="spell-row">
+                    <td><a class="post-link"
+                       href="{{ url_for('creature_page', creature_name=creature.url_path) }}">
+                        {{ creature.name }}
+                    </a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
         <a class="post-meta jetsHide" href="#top">Back to top &#8593;</a>
     {% endfor %}
 {% endblock %}

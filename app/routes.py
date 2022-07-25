@@ -179,7 +179,7 @@ def spell_home():
     spells_by_level = group_spells(spells)
     schools = set([s.school for s in spells])
     return render_template('spell_home.html', title='Spells', spell_lists=spells_by_level, schools=schools,
-                           class_lists=True, character=None)
+                           class_lists=True, character=None, spellbook=None)
 
 
 @app.route('/spells/<spell_name>')
@@ -200,8 +200,8 @@ def spells_by_tag(tag_name):
         tag_spells = Spell.filter(Spell.srd).with_parent(tag).order_by(Spell.level, Spell.name).all()
     grouped_tags = group_spells(tag_spells)
     schools = set([s.school for s in tag_spells])
-    return render_template('spell_home.html', title=f'{tag_name.capitalize()} Spells',
-                           spell_lists=grouped_tags, schools=schools, class_lists=True, character=None)
+    return render_template('spell_home.html', title=f'{tag_name.capitalize()} Spells', spell_lists=grouped_tags,
+                           schools=schools, class_lists=True, character=None, spellbook=None)
 
 
 @app.route('/creatures')
@@ -322,11 +322,14 @@ def character_add_spellbook(char_id):
     return redirect(url_for('home'))
 
 
-@app.route('/character/<char_id>/spellbook')
+@app.route('/character/<char_id>/spells')
 @login_required
 def character_spellbook(char_id):
     character = Character.query.filter_by(id=char_id).first_or_404()
-    spells = character.spellbook.spells.order_by(Spell.level, Spell.name).all()
+    if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
+        spells = character.spellbook.spells.order_by(Spell.level, Spell.name).all()
+    else:
+        spells = character.spellbook.spells.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
     spells_by_level = group_spells(spells)
     schools = set([s.school for s in spells])
     if character.name.endswith('s'):
@@ -334,4 +337,36 @@ def character_spellbook(char_id):
     else:
         title = f"{character.name}'s Spells"
     return render_template('spell_home.html', title=title, spell_lists=spells_by_level,
-                           schools=schools, class_lists=False, character=character)
+                           schools=schools, class_lists=False, character=character, spellbook=None)
+
+
+@app.route('/character/<char_id>/spells/edit')
+@login_required
+def character_edit_spells(char_id):
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
+        all_spells = Spell.query.order_by(Spell.level, Spell.name).all()
+    else:
+        all_spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
+    spells_by_level = group_spells(all_spells)
+    schools = set([s.school for s in all_spells])
+    return render_template(
+        'spell_home.html', title=f'Add/Remove spells for {character.name}', spell_lists=spells_by_level,
+        schools=schools, class_lists=False, character=character, spellbook=character.spellbook
+    )
+
+
+@app.route('/character/<char_id>/spell/<spell_id>/<action>')
+@login_required
+def character_edit_spell(char_id, spell_id, action):
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    spell = Spell.query.filter_by(id=spell_id).first_or_404()
+    if action == 'add':
+        character.spellbook.spells.append(spell)
+    elif action == 'remove':
+        character.spellbook.spells.remove(spell)
+    else:
+        abort(404)
+    character.save()
+    return redirect(url_for('character_edit_spells', char_id=character.id))
+
