@@ -344,29 +344,39 @@ def character_spellbook(char_id):
 @login_required
 def character_edit_spells(char_id):
     character = Character.query.filter_by(id=char_id).first_or_404()
-    if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
-        all_spells = Spell.query.order_by(Spell.level, Spell.name).all()
+    is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
+    if character.user == current_user or is_admin:
+        if current_user.is_authenticated and current_user.role_id > app.config.get('NON_SRD_ROLES'):
+            all_spells = Spell.query.order_by(Spell.level, Spell.name).all()
+        else:
+            all_spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
+        spells_by_level = group_spells(all_spells)
+        schools = set([s.school for s in all_spells])
+        return render_template(
+            'spell_home.html', title=f'Add/Remove spells for {character.name}', spell_lists=spells_by_level,
+            schools=schools, class_lists=False, character=character, spellbook=character.spellbook
+        )
     else:
-        all_spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
-    spells_by_level = group_spells(all_spells)
-    schools = set([s.school for s in all_spells])
-    return render_template(
-        'spell_home.html', title=f'Add/Remove spells for {character.name}', spell_lists=spells_by_level,
-        schools=schools, class_lists=False, character=character, spellbook=character.spellbook
-    )
+        flash("You don't have permission to edit this character's spellbook")
+    return redirect(url_for('character_spellbook', char_id=char_id))
 
 
 @app.route('/character/<char_id>/spell/<spell_id>/<action>')
 @login_required
 def character_edit_spell(char_id, spell_id, action):
+    is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
     character = Character.query.filter_by(id=char_id).first_or_404()
-    spell = Spell.query.filter_by(id=spell_id).first_or_404()
-    if action == 'add':
-        character.spellbook.spells.append(spell)
-    elif action == 'remove':
-        character.spellbook.spells.remove(spell)
+    if character.user == current_user or is_admin:
+        spell = Spell.query.filter_by(id=spell_id).first_or_404()
+        if action == 'add':
+            character.spellbook.spells.append(spell)
+        elif action == 'remove':
+            character.spellbook.spells.remove(spell)
+        else:
+            abort(404)
+        character.save()
+        return redirect(url_for('character_edit_spells', char_id=character.id))
     else:
-        abort(404)
-    character.save()
-    return redirect(url_for('character_edit_spells', char_id=character.id))
+        flash("You don't have permission to edit this character's spellbook")
+    return redirect(url_for('character_spellbook', char_id=char_id))
 
