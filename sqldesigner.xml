@@ -228,6 +228,35 @@
 <row name="portrait_path" null="1" autoincrement="0">
 <datatype>VARCHAR(127)</datatype>
 <default>NULL</default></row>
+<row name="game_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="games" row="id" />
+</row>
+<row name="str" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="dex" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="con" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="int" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="wis" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="cha" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="race_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="races" row="id" />
+</row>
+<row name="hp" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
@@ -256,7 +285,7 @@
 <key type="PRIMARY" name="">
 </key>
 </table>
-<table x="648" y="80" name="users">
+<table x="579" y="8" name="users">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -283,7 +312,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="858" y="76" name="roles">
+<table x="780" y="23" name="roles">
 <row name="id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
@@ -294,13 +323,16 @@
 <part>id</part>
 </key>
 </table>
-<table x="303" y="645" name="classes">
+<table x="307" y="711" name="classes">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <row name="srd" null="0" autoincrement="0">
 <datatype>BINARY</datatype>
 <default>'NULL'</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(16)</datatype>
+<default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
@@ -356,7 +388,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="875" y="400" name="backgrounds">
+<table x="1813" y="767" name="backgrounds">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -364,15 +396,21 @@
 <part>id</part>
 </key>
 </table>
-<table x="1024" y="698" name="races">
+<table x="838" y="497" name="races">
 <row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(16)</datatype>
+<default>NULL</default></row>
+<row name="srd" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
 </key>
 </table>
-<table x="1222" y="767" name="race_features">
+<table x="1040" y="700" name="race_features">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -384,7 +422,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="975" y="500" name="background_features">
+<table x="1755" y="676" name="background_features">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -406,7 +444,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1250" y="125" name="items">
+<table x="1975" y="304" name="items">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -414,7 +452,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1250" y="275" name="magical_items">
+<table x="1975" y="454" name="magical_items">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -422,7 +460,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1250" y="425" name="deities">
+<table x="1975" y="604" name="deities">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -430,7 +468,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1275" y="550" name="level_by_experience">
+<table x="1999" y="748" name="level_by_experience">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -438,7 +476,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1075" y="225" name="weapons">
+<table x="1800" y="404" name="weapons">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -446,7 +484,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="1075" y="350" name="armors">
+<table x="1800" y="529" name="armors">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -506,10 +544,7 @@
 </key>
 <comment>Link creatures to tags</comment>
 </table>
-<table x="443" y="498" name="class_proficiency">
-<row name="id" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
+<table x="445" y="679" name="class_proficiencies">
 <row name="class_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="classes" row="id" />
@@ -519,13 +554,9 @@
 <default>NULL</default><relation table="proficiency" row="id" />
 </row>
 <key type="PRIMARY" name="">
-<part>id</part>
 </key>
 </table>
-<table x="813" y="674" name="race_proficiency">
-<row name="id" null="1" autoincrement="1">
-<datatype>INTEGER</datatype>
-<default>NULL</default></row>
+<table x="813" y="674" name="race_proficiencies">
 <row name="race_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default><relation table="races" row="id" />
@@ -535,7 +566,45 @@
 <default>NULL</default><relation table="proficiency" row="id" />
 </row>
 <key type="PRIMARY" name="">
+</key>
+</table>
+<table x="822" y="285" name="games">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(128)</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
 <part>id</part>
+</key>
+</table>
+<table x="807" y="402" name="game_roles">
+<row name="id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default></row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(16)</datatype>
+<default>NULL</default></row>
+<key type="PRIMARY" name="">
+<part>id</part>
+</key>
+</table>
+<table x="590" y="222" name="user_games">
+<row name="user_id" null="1" autoincrement="1">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="users" row="id" />
+</row>
+<row name="game_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="games" row="id" />
+</row>
+<row name="game_role_id" null="1" autoincrement="0">
+<datatype>INTEGER</datatype>
+<default>NULL</default><relation table="game_roles" row="id" />
+</row>
+<key type="PRIMARY" name="">
+<part>user_id</part>
 </key>
 </table>
 </sql>
