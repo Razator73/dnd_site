@@ -220,6 +220,13 @@
 <default>NULL</default></row>
 <row name="user_id" null="1" autoincrement="0">
 <datatype>INTEGER</datatype>
+<default>NULL</default><relation table="users" row="id" />
+</row>
+<row name="name" null="1" autoincrement="0">
+<datatype>VARCHAR(32)</datatype>
+<default>NULL</default></row>
+<row name="portrait_path" null="1" autoincrement="0">
+<datatype>VARCHAR(127)</datatype>
 <default>NULL</default></row>
 <key type="PRIMARY" name="">
 <part>id</part>
@@ -249,21 +256,7 @@
 <key type="PRIMARY" name="">
 </key>
 </table>
-<table x="525" y="225" name="user_characters">
-<row name="user_id" null="0" autoincrement="0">
-<datatype>INTEGER</datatype>
-<relation table="users" row="id" />
-</row>
-<row name="character_id" null="0" autoincrement="0">
-<datatype>INTEGER</datatype>
-<relation table="characters" row="id" />
-</row>
-<key type="PRIMARY" name="">
-<part>user_id</part>
-<part>character_id</part>
-</key>
-</table>
-<table x="725" y="75" name="users">
+<table x="648" y="80" name="users">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -290,7 +283,7 @@
 <part>id</part>
 </key>
 </table>
-<table x="975" y="75" name="roles">
+<table x="858" y="76" name="roles">
 <row name="id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 </row>
@@ -474,7 +467,7 @@
 </key>
 <comment>All the possible spell tags</comment>
 </table>
-<table x="32" y="172" name="spell_tag_links">
+<table x="31" y="163" name="spell_tag_links">
 <row name="spell_id" null="0" autoincrement="0">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
@@ -513,7 +506,7 @@
 </key>
 <comment>Link creatures to tags</comment>
 </table>
-<table x="439" y="412" name="class_proficiency">
+<table x="443" y="498" name="class_proficiency">
 <row name="id" null="1" autoincrement="1">
 <datatype>INTEGER</datatype>
 <default>NULL</default></row>
