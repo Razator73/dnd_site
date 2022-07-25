@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block dnd_content %}
+
+    <h1 class="page-heading">{{ title }}</h1>
+    <dl>
+        {% for character in user.characters.order_by('name').all() %}
+            <dd><a href="{{ url_for('character_page', char_id=character.id) }}">
+                {{ character.name }}
+            </a></dd>
+        {% endfor %}
+    </dl>
+    {% if current_user == user %}
+        <p><a href="{{ url_for('character_new') }}">Create New Character</a></p>
+    {% endif %}
+
+{% endblock %}

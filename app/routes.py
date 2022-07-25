@@ -10,8 +10,8 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 
 from app import app
-from app.forms import LoginForm, RegistrationForm, EditUserForm
-from app.models import Spell, Creature, User, Role, CreatureTag, SpellTag
+from app.forms import LoginForm, RegistrationForm, EditUserForm, NewCharacterForm, EditCharacterForm
+from app.models import Spell, Creature, User, Role, CreatureTag, SpellTag, Character, Spellbook
 
 
 def group_spells(spells):
@@ -95,11 +95,11 @@ def profile(username):
     return render_template('profile.html', title=user.username, user=user, admin_id=app.config.get('ADMIN_ROLE'))
 
 
-def save_picture(pic, user):
+def save_picture(pic, old_pic, static_folder, file_prefix):
     image_file = secure_filename(pic.filename)
-    filename = f'{user.username}_{image_file}'
-    picture_folder = Path(app.config.get('UPLOADED_IMAGES_DEST'))
-    if (current_pic := user.profile_picture_path.split('/')[-1]) != 'default.png':
+    filename = f'{file_prefix}_{image_file}'
+    picture_folder = Path(app.config.get('UPLOADED_IMAGES_DEST')) / static_folder
+    if (current_pic := old_pic.split('/')[-1]) != 'default.png':
         (picture_folder / current_pic).unlink()
 
     output_size = (256, 256)
@@ -132,7 +132,8 @@ def edit_user(username):
                 role = Role.query.filter_by(name=user_form.role.data).first()
                 user.role_id = role.id
             if profile_picture := user_form.profile_picture.data:
-                filename = save_picture(profile_picture, user)
+                print(type(profile_picture))
+                filename = save_picture(profile_picture, user.profile_picture_path, 'profiles', user.username)
                 user.profile_picture_path = f'profiles/{filename}'
             user.save()
             flash('Your changes have been saved')
@@ -177,7 +178,8 @@ def spell_home():
         spells = Spell.query.filter_by(srd=True).order_by(Spell.level, Spell.name).all()
     spells_by_level = group_spells(spells)
     schools = set([s.school for s in spells])
-    return render_template('spell_home.html', title='Spells', spell_lists=spells_by_level, schools=schools)
+    return render_template('spell_home.html', title='Spells', spell_lists=spells_by_level, schools=schools,
+                           class_lists=True, character=None)
 
 
 @app.route('/spells/<spell_name>')
@@ -191,7 +193,7 @@ def spell_page(spell_name):
 
 @app.route('/spells/tags/<tag_name>')
 def spells_by_tag(tag_name):
-    tag = SpellTag.query.filter_by(tag=tag_name).first()
+    tag = SpellTag.query.filter_by(tag=tag_name).first_or_404()
     if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
         tag_spells = Spell.query.with_parent(tag).order_by(Spell.level, Spell.name).all()
     else:
@@ -199,7 +201,7 @@ def spells_by_tag(tag_name):
     grouped_tags = group_spells(tag_spells)
     schools = set([s.school for s in tag_spells])
     return render_template('spell_home.html', title=f'{tag_name.capitalize()} Spells',
-                           spell_lists=grouped_tags, schools=schools)
+                           spell_lists=grouped_tags, schools=schools, class_lists=True, character=None)
 
 
 @app.route('/creatures')
@@ -237,7 +239,7 @@ def creature_page(creature_name):
 
 @app.route('/creatures/tags/<tag_name>')
 def creatures_by_tag(tag_name):
-    tag = CreatureTag.query.filter_by(tag=tag_name).first()
+    tag = CreatureTag.query.filter_by(tag=tag_name).first_or_404()
     if current_user.is_authenticated and current_user.role_id > app.config['NON_SRD_ROLES']:
         tag_creatures = Creature.query.with_parent(tag).order_by(Creature.cr, Creature.name).all()
     else:
@@ -247,3 +249,89 @@ def creatures_by_tag(tag_name):
     kinds = set([c.kind for c in tag_creatures])
     return render_template('creature_home.html', title=f'{tag_name} Creatures',
                            grouped_creatures=grouped_creatures, kinds=kinds)
+
+
+@app.route('/user/<username>/characters')
+@login_required
+def characters(username):
+    user = User.query.filter(User.username.ilike(username)).first_or_404()
+    return render_template('character_list.html', title=f'{username}\'s Characters', user=user)
+
+
+@app.route('/new_character', methods=['GET', 'POST'])
+@login_required
+def character_new():
+    char_form = NewCharacterForm()
+    if char_form.validate_on_submit():
+        if portrait_path := char_form.portrait.data:
+            character = Character(char_form.name.data, current_user.id)
+            filename = save_picture(portrait_path, character.portrait_path, 'portraits',
+                                    f'{current_user.username}_{character.id}')
+            character.portrait_path = f'portraits/{filename}'
+        else:
+            character = Character(char_form.name.data, current_user.id)
+        character.save()
+        flash(f'{character.name} has been created')
+        return redirect(url_for('characters', username=current_user.username))
+    return render_template('character_new.html', title='New Character', form=char_form)
+
+
+@app.route('/character/<char_id>')
+@login_required
+def character_page(char_id):
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    return render_template('character.html', title=character.name, character=character)
+
+
+@app.route('/character/<char_id>/edit', methods=['GET', 'POST'])
+@login_required
+def character_edit(char_id):
+    is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    if current_user == character.user or is_admin:
+        char_form = EditCharacterForm()
+        if char_form.validate_on_submit():
+            character.name = char_form.name.data
+            app.logger.info(f'{character.name} - {char_form.name.data}')
+            if portrait_path := char_form.portrait.data:
+                print(type(portrait_path))
+                filename = save_picture(portrait_path, character.portrait_path, 'portraits',
+                                        f'{character.user.username}_{character.id}')
+                character.portrait_path = f'portraits/{filename}'
+            character.save()
+            return redirect(url_for('character_page', char_id=character.id))
+        char_form.name.data = character.name
+        return render_template('character_new.html', title='Edit character', form=char_form)
+    else:
+        abort(404)
+
+
+@app.route('/character/<char_id>/spellbook/add')
+@login_required
+def character_add_spellbook(char_id):
+    is_admin = current_user.is_authenticated and current_user.role_id == app.config.get('ADMIN_ROLE')
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    if character.spellbook:
+        flash(f'There is already a spellbook for {character.name}')
+        return redirect(url_for('character_page', char_id=character.id))
+    if current_user == character.user or is_admin:
+        spellbook = Spellbook(character.id)
+        spellbook.save()
+        flash('Spellbook added')
+        return redirect(url_for('character_page', char_id=character.id))
+    return redirect(url_for('home'))
+
+
+@app.route('/character/<char_id>/spellbook')
+@login_required
+def character_spellbook(char_id):
+    character = Character.query.filter_by(id=char_id).first_or_404()
+    spells = character.spellbook.spells.order_by(Spell.level, Spell.name).all()
+    spells_by_level = group_spells(spells)
+    schools = set([s.school for s in spells])
+    if character.name.endswith('s'):
+        title = f"{character.name}' Spells"
+    else:
+        title = f"{character.name}'s Spells"
+    return render_template('spell_home.html', title=title, spell_lists=spells_by_level,
+                           schools=schools, class_lists=False, character=character)

@@ -52,3 +52,17 @@ class EditUserForm(FlaskForm):
     def validate_email(self, email):
         if email.data.lower() != self.user.email.lower() and User.query.filter(User.email.ilike(email.data)).first():
             raise ValidationError('Email is already taken. Please use a different email')
+
+
+class NewCharacterForm(FlaskForm):
+    name = StringField('Character name', validators=[DataRequired()])
+    portrait = FileField('Upload Character Portrait',
+                         validators=[FileAllowed(imagefiles, 'Images only'), Optional()])
+    submit = SubmitField('Create')
+
+
+class EditCharacterForm(FlaskForm):
+    name = StringField('Character name', validators=[DataRequired()])
+    portrait = FileField('Upload Character Portrait',
+                         validators=[FileAllowed(imagefiles, 'Images only'), Optional()])
+    submit = SubmitField('Update')

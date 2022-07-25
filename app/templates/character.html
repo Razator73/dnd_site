@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block dnd_content %}
+    <table>
+        <tr>
+            <td width="256px">
+                <img src="{{ url_for('static', filename=character.portrait_path) }}" width="256" height="256"/>
+            </td>
+            <td>
+                <h1>{{ character.name }}</h1>
+                {% if character.spellbook %}
+                    <p><a href="{{ url_for('character_spellbook', char_id=character.id) }}">Spellbook</a></p>
+                {% endif %}
+                {% if current_user == character.user or current_user.role_id == admin_id %}
+                    {% if  not character.spellbook %}
+                        <p><a href="{{ url_for('character_add_spellbook', char_id=character.id) }}">
+                            Add Spellbook</a></p>
+                    {% endif %}
+                    <p><a href="{{ url_for('character_edit', char_id=character.id) }}">Edit</a></p>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <p><a href="{{ url_for('characters', username=character.user.username) }}">
+        {{ character.user.username }}'s Other Characters</a></p>
+{% endblock %}

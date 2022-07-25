@@ -4,4 +4,5 @@
 /scratch/
 /.env
 app/static/profiles/*
+app/static/portraits/*
 !app/static/profiles/default.png

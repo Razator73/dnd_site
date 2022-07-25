@@ -2,7 +2,6 @@ import datetime as dt
 
 from flask_login import UserMixin
 from sqlalchemy import func
-from sqlalchemy.dialects.postgresql import ARRAY
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, login
@@ -44,6 +43,7 @@ class User(UserMixin, db.Model, ModelCrud):
     profile_picture_path = db.Column(db.String(127), default='profiles/default.png', nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), default=10)
     last_seen = db.Column(db.DateTime, default=dt.datetime.utcnow)
+    characters = db.relationship('Character', backref='user', lazy='dynamic')
 
     def __init__(self, username, email, password):
         self.username = username
@@ -185,3 +185,46 @@ class CreatureTag(db.Model, ModelCrud):
 
     def __repr__(self):
         return f'<CreatureTag ({self.tag})>'
+
+
+class Character(db.Model, ModelCrud):
+    __tablename__ = 'characters'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    name = db.Column(db.String(32), nullable=False)
+    portrait_path = db.Column(db.String(127), default='profiles/default.png', nullable=False)
+    spellbook = db.relationship('Spellbook', backref='character', uselist=False)
+
+    def __init__(self, name, user_id, portrait_path='profiles/default.png'):
+        self.name = name
+        self.user_id = user_id
+        self.portrait_path = portrait_path
+
+    def __repr__(self):
+        return f'<Character ({self.name})>'
+
+
+spellbook_spells = db.Table(
+    'spellbook_spells',
+    db.Column('spell_id', db.Integer, db.ForeignKey('spells.id'), primary_key=True),
+    db.Column('spellbook_id', db.Integer, db.ForeignKey('spellbooks.id'), primary_key=True)
+)
+
+
+class Spellbook(db.Model, ModelCrud):
+    __tablename__ = 'spellbooks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    character_id = db.Column(db.Integer, db.ForeignKey('characters.id'), unique=True)
+    spells = db.relationship('Spell', secondary=spellbook_spells, lazy='dynamic',
+                             backref=db.backref('spells', lazy='dynamic'))
+
+    def __init__(self, char_id):
+        self.character_id = char_id
+
+    def __repr__(self):
+        if self.character.name.endswith('s'):
+            return f'<{self.character.name}\' Spellbook>'
+        else:
+            return f"<{self.character.name}'s Spellbook>"

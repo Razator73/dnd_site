@@ -67,6 +67,9 @@
                     {% if current_user.is_anonymous %}
                         <a class="page-link" href="{{ url_for('login') }}">Login</a>
                     {% else %}
+                        <a class="page-link" href="{{ url_for('characters', username=current_user.username) }}">
+                            Characters
+                        </a>
                         <a class="page-link" href="{{ url_for('profile', username=current_user.username) }}">Profile</a>
                         <a class="page-link" href="{{ url_for('logout') }}">Logout</a>
                     {% endif %}
